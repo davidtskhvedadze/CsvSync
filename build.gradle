@@ -1,0 +1,29 @@
+plugins {
+    id 'groovy'
+    id 'application'
+}
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.apache.camel:camel-core:3.11.1'
+    implementation 'org.apache.camel:camel-groovy:3.11.1'
+    implementation 'org.apache.camel:camel-http:3.11.1'
+    implementation 'org.apache.camel:camel-jetty:3.11.1'
+    implementation 'org.codehaus.groovy:groovy:3.0.9'
+}
+
+tasks.withType(GroovyCompile) {
+    groovyOptions.encoding = 'UTF-8'
+}
+
+application {
+    // mainClass = 'Sample'
+}
+
+java {
+    sourceCompatibility = JavaVersion.VERSION_17
+    targetCompatibility = JavaVersion.VERSION_17
+}
