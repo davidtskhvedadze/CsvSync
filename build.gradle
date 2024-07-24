@@ -8,11 +8,12 @@ repositories {
 }
 
 dependencies {
+    implementation 'com.opencsv:opencsv:5.5.2'
+    implementation 'org.codehaus.groovy:groovy-all:3.0.9'
     implementation 'org.apache.camel:camel-core:3.11.1'
-    implementation 'org.apache.camel:camel-groovy:3.11.1'
-    implementation 'org.apache.camel:camel-http:3.11.1'
-    implementation 'org.apache.camel:camel-jetty:3.11.1'
-    implementation 'org.codehaus.groovy:groovy:3.0.9'
+    implementation 'org.apache.camel:camel-jdbc:3.11.1'
+    implementation 'mysql:mysql-connector-java:8.0.26'
+    implementation 'io.github.cdimascio:dotenv-java:2.2.0'
 }
 
 tasks.withType(GroovyCompile) {
@@ -20,7 +21,7 @@ tasks.withType(GroovyCompile) {
 }
 
 application {
-    // mainClass = 'Sample'
+    mainClass = 'CsvToDatabaseImporter'
 }
 
 java {
