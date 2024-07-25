@@ -48,11 +48,12 @@ Replace `<csv-file-name>` with the name of your CSV file.
 
 The CSV file should have the following format:
 ```plaintext
-name,age,email
-John Doe,30,john.doe@example.com
-Jane Smith,25,jane.smith@example.com
-Alice Johnson,40,alice.johnson@example.com
-Bob Brown,35,bob.brown@example.com
+header1,header2,header3, ...
+data1,data2,data3, ...
+data1,data2,data3, ...
+.
+.
+.
 ```
 
 Place the file in the `csv` directory within the `src` folder.
