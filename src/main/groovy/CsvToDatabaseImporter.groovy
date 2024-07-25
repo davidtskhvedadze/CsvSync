@@ -6,7 +6,7 @@ import org.apache.camel.dataformat.csv.CsvDataFormat
 import io.github.cdimascio.dotenv.Dotenv
 import com.mysql.cj.jdbc.MysqlDataSource
 import javax.sql.DataSource
-import java.sql.Connection // Import the Connection class
+import java.sql.Connection
 
 class CsvToDatabaseImporter {
     static void main(String[] args) {
