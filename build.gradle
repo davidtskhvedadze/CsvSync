@@ -8,12 +8,15 @@ repositories {
 }
 
 dependencies {
-    implementation 'com.opencsv:opencsv:5.5.2'
     implementation 'org.codehaus.groovy:groovy-all:3.0.9'
-    implementation 'org.apache.camel:camel-core:3.11.1'
-    implementation 'org.apache.camel:camel-jdbc:3.11.1'
-    implementation 'mysql:mysql-connector-java:8.0.26'
-    implementation 'io.github.cdimascio:dotenv-java:2.2.0'
+    implementation 'org.apache.camel:camel-core:3.14.0'
+    implementation 'org.apache.camel:camel-file:3.14.0'
+    implementation 'org.apache.camel:camel-jdbc:3.14.0'
+    implementation 'org.apache.camel:camel-csv:3.14.0'
+    implementation 'mysql:mysql-connector-java:8.0.29'
+    implementation 'io.github.cdimascio:java-dotenv:5.2.2'
+    implementation 'org.slf4j:slf4j-simple:1.7.32'
+    implementation 'org.apache.camel:camel-sql:3.14.0'
 }
 
 tasks.withType(GroovyCompile) {
