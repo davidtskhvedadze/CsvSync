@@ -9,26 +9,27 @@ import javax.sql.DataSource
 import java.sql.Connection
 
 class CsvToDatabaseImporter {
+
     static void main(String[] args) {
         if (args.length != 1) {
-            println "Usage: CsvToDatabaseImporter <csv-file-name>"
+            println 'Usage: CsvToDatabaseImporter <csv-file-name>'
             System.exit(1)
         }
 
         Dotenv dotenv = Dotenv.load()
         String csvFileName = args[0]
-        String dbHost = dotenv.get("DB_URL")
-        String user = dotenv.get("DB_USER")
-        String password = dotenv.get("DB_PASSWORD")
+        String dbHost = dotenv.get('DB_URL')
+        String user = dotenv.get('DB_USER')
+        String password = dotenv.get('DB_PASSWORD')
 
         if (!dbHost || !user || !password) {
-            println "Database connection details are not set in environment variables."
+            println 'Database connection details are not set in environment variables.'
             System.exit(1)
         }
 
         DataSource dataSource = createDataSource(dbHost, user, password)
         if (dataSource == null || !testDatabaseConnection(dataSource)) {
-            println "Failed to connect to the database. Please check your database settings."
+            println 'Failed to connect to the database. Please check your database settings.'
             System.exit(1)
         }
 
@@ -36,36 +37,42 @@ class CsvToDatabaseImporter {
         try {
             SqlComponent sqlComponent = new SqlComponent()
             sqlComponent.setDataSource(dataSource)
-            context.addComponent("sql", sqlComponent)
+            context.addComponent('sql', sqlComponent)
 
             context.addRoutes(new RouteBuilder() {
+
                 @Override
                 void configure() {
                     CsvDataFormat csv = new CsvDataFormat()
                     csv.setUseMaps(true)
 
-                    from("file:src/csv?fileName=" + csvFileName + "&noop=true")
+                    from('file:src/csv?fileName=' + csvFileName + '&noop=true')
                         .log("Picked up file: \${header.CamelFileName}")
                         .unmarshal(csv)
                         .split().simple("\${body}")
                         .process(exchange -> {
-                            Map<String, Object> data = exchange.getIn().getBody(Map.class)
-                            exchange.getIn().setHeader("name", data.get("name"))
-                            exchange.getIn().setHeader("age", data.get("age"))
-                            exchange.getIn().setHeader("email", data.get("email"))
+                            Map<String, Object> data = exchange.getIn().getBody(Map)
+                            String headers = data.keySet().join(', ')
+                            String values = data.keySet().collect { ":#${it}" }.join(', ')
+                            String sql = "INSERT INTO users (${headers}) VALUES (${values})"
+                            exchange.getIn().setBody(sql)
+                            data.each { key, value ->
+                                exchange.getIn().setHeader(key, value)
+                            }
                         })
-                        .to("sql:INSERT INTO users (name, age, email) VALUES (:#name, :#age, :#email)")
-                        .log("Inserted record into database")
+                        .toD("sql:\${body}")
+                        .log('Inserted record into database')
                         .end()
                         .process(exchange -> {
-                            println "Shutting down Camel context..."
+                            println 'Shutting down Camel context...'
                             context.stop()
                             System.exit(0)
                         })
                 }
+
             })
 
-            println "Starting Camel context..."
+            println 'Starting Camel context...'
             context.start()
             synchronized(context) {
                 context.wait()
@@ -73,7 +80,7 @@ class CsvToDatabaseImporter {
         } catch (Exception e) {
             e.printStackTrace()
         } finally {
-            println "Stopping Camel context..."
+            println 'Stopping Camel context...'
             try {
                 context.stop()
             } catch (Exception e) {
@@ -98,7 +105,7 @@ class CsvToDatabaseImporter {
     static boolean testDatabaseConnection(DataSource dataSource) {
         try (Connection connection = dataSource.getConnection()) {
             if (connection != null && !connection.isClosed()) {
-                println "Successfully connected to the database."
+                println 'Successfully connected to the database.'
                 return true
             }
         } catch (Exception e) {
@@ -106,4 +113,5 @@ class CsvToDatabaseImporter {
         }
         return false
     }
+
 }
