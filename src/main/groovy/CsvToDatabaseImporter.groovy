@@ -6,9 +6,7 @@ import org.apache.camel.dataformat.csv.CsvDataFormat
 import io.github.cdimascio.dotenv.Dotenv
 import com.mysql.cj.jdbc.MysqlDataSource
 import javax.sql.DataSource
-import java.sql.Connection
-import java.sql.ResultSet
-import java.sql.Statement
+import java.sql.Connection // Import the Connection class
 
 class CsvToDatabaseImporter {
     static void main(String[] args) {
@@ -29,34 +27,17 @@ class CsvToDatabaseImporter {
         }
 
         DataSource dataSource = createDataSource(dbHost, user, password)
-        if (dataSource == null) {
-            println "Failed to create DataSource."
-            System.exit(1)
-        }
-
-        if (!testDatabaseConnection(dataSource)) {
+        if (dataSource == null || !testDatabaseConnection(dataSource)) {
             println "Failed to connect to the database. Please check your database settings."
             System.exit(1)
         }
 
-        println "DataSource created with URL: jdbc:mysql://${dbHost}, User: ${user}"
-
-        // Print out the tables in the database
-        printDatabaseTables(dataSource)
-
         CamelContext context = new DefaultCamelContext()
-
         try {
-            // Create and configure the SqlComponent
             SqlComponent sqlComponent = new SqlComponent()
             sqlComponent.setDataSource(dataSource)
             context.addComponent("sql", sqlComponent)
-            println "SqlComponent created and DataSource assigned."
 
-            // Print SqlComponent details
-            printSqlComponentDetails(sqlComponent)
-
-            // Add routes
             context.addRoutes(new RouteBuilder() {
                 @Override
                 void configure() {
@@ -66,9 +47,7 @@ class CsvToDatabaseImporter {
                     from("file:src/csv?fileName=" + csvFileName + "&noop=true")
                         .log("Picked up file: \${header.CamelFileName}")
                         .unmarshal(csv)
-                        .log("Unmarshalled CSV data: \${body}")
                         .split().simple("\${body}")
-                        .log("Processing record: \${body}")
                         .process(exchange -> {
                             Map<String, Object> data = exchange.getIn().getBody(Map.class)
                             exchange.getIn().setHeader("name", data.get("name"))
@@ -88,8 +67,6 @@ class CsvToDatabaseImporter {
 
             println "Starting Camel context..."
             context.start()
-
-            // Keep the context running to process the file
             synchronized(context) {
                 context.wait()
             }
@@ -111,14 +88,6 @@ class CsvToDatabaseImporter {
             dataSource.setURL("jdbc:mysql://${dbHost}")
             dataSource.setUser(user)
             dataSource.setPassword(password)
-            
-            // Print out dataSource properties for verification
-            println "DataSource URL: " + dataSource.getURL()
-            println "DataSource User: " + dataSource.getUser()
-            println "DataSource ServerName: " + dataSource.getServerName()
-            println "DataSource Port: " + dataSource.getPort()
-            println "DataSource DatabaseName: " + dataSource.getDatabaseName()
-
             return dataSource
         } catch (Exception e) {
             e.printStackTrace()
@@ -136,33 +105,5 @@ class CsvToDatabaseImporter {
             e.printStackTrace()
         }
         return false
-    }
-
-    static void printDatabaseTables(DataSource dataSource) {
-        try (Connection connection = dataSource.getConnection();
-             Statement statement = connection.createStatement();
-             ResultSet resultSet = statement.executeQuery("SHOW TABLES")) {
-
-            println "Tables in the database:"
-            while (resultSet.next()) {
-                println resultSet.getString(1)
-            }
-        } catch (Exception e) {
-            e.printStackTrace()
-        }
-    }
-
-    static void printSqlComponentDetails(SqlComponent sqlComponent) {
-        println "SqlComponent details:"
-        println "DataSource: " + sqlComponent.getDataSource()
-        // Printing dataSource properties
-        if (sqlComponent.getDataSource() instanceof MysqlDataSource) {
-            MysqlDataSource dataSource = (MysqlDataSource) sqlComponent.getDataSource()
-            println "SqlComponent DataSource URL: " + dataSource.getURL()
-            println "SqlComponent DataSource User: " + dataSource.getUser()
-            println "SqlComponent DataSource ServerName: " + dataSource.getServerName()
-            println "SqlComponent DataSource Port: " + dataSource.getPort()
-            println "SqlComponent DataSource DatabaseName: " + dataSource.getDatabaseName()
-        }
     }
 }
