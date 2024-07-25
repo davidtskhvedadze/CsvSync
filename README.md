@@ -41,7 +41,7 @@ This stack represents the core technologies behind CsvToDatabaseImporter, includ
 ## Usage
 
 To run the application, use the following command:
-`./gradlew run --args=<csv-file-name>`
+`./gradlew run --args=<csv-file-name> <table-name>`
 Replace `<csv-file-name>` with the name of your CSV file.
 
 ## CSV File Format
